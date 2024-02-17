@@ -115,6 +115,11 @@ int delete_stack(Stack** stack_ref) {
 
     Stack* stack = *stack_ref;
 
+    if(stack == 0) {
+        res = EINVARG;
+        goto out;
+    }
+
     while(stack->top != 0) {
         delete_top_node(stack);
     }
@@ -123,7 +128,8 @@ int delete_stack(Stack** stack_ref) {
 
 out:
     if(res == EINVARG) printf("EINVARG: the `stack_ref` argument must"
-                              " not be a null pointer!");
+                              " not be a null pointer, and must point"
+                              " to a stack!");
     return res;
 }
 
