@@ -68,6 +68,7 @@ static int delete_top_node(Stack* stack) {
     
     stack->top = cur_top->next;
     free(cur_top);
+    stack->size -= 1;
 
 out:
     if(res == EINVARG) printf("EINVARG: the `stack` argument must not"
@@ -93,8 +94,6 @@ int pop(Stack* stack, void** top_value_ref) {
 
     *top_value_ref = stack->top->value; 
     delete_top_node(stack);
-
-    stack->size -= 1;
 
 out:
     if(res == EINVARG) printf("EINVARG: neither the `stack` nor the"
