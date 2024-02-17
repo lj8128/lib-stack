@@ -1,6 +1,7 @@
 #include "stack.h"
 #include "status_stack.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 int init_stack(Stack* stack) {
     int res = SUCCESS;
@@ -15,42 +16,66 @@ int init_stack(Stack* stack) {
 
 out:
     if(res == EINVARG) printf("EINVARG: the `stack` argument must not"
-                              " be a null pointer!");
+                              " be a null pointer!\n");
     return res;
 }
 
 int push(Stack* stack, void* value) {
     int res = SUCCESS;
 
-    if(stack == 0 || value == 0) {
+    if(stack == 0) {
         res = EINVARG;
         goto out;
     }
 
-    StackNode* newNode = malloc(sizeof(StackNode));
-    newNode->value = value;
+    StackNode* new_node = malloc(sizeof(StackNode));
+    new_node->value = value;
 
-    if(newNode == 0) {
+    if(new_node == 0) {
         res = EMEM;
         goto out;
     }
 
     if(stack->top != 0) {
-        newNode->next = stack->top;
+        new_node->next = stack->top;
     } else {
-        newNode->next = 0;
+        new_node->next = 0;
     }
 
-    stack->top = newNode;
+    stack->top = new_node;
     stack->size += 1; 
 
 out:
-    if(res == EINVARG) printf("EINVARG: neither the `stack` nor the"
-                              " `value` argument can be a null"
-                              " pointer!");
-    if(res == EMEM) printf("EMEM: failed to allocate memory for"
-            " `newNode`!");
+    if(res == EINVARG) printf("EINVARG: the `stack` argument must not"
+                              " be a null pointer!\n");
+    if(res == EMEM) printf("EMEM: failed to allocate memory to"
+            " `new_node`!\n");
     return res;
+}
+
+static int delete_top_node(Stack* stack) {
+    int res = SUCCESS;
+    if(stack == 0) {
+        res = EINVARG;
+        goto out;
+    }
+
+    StackNode* cur_top = stack->top;
+    if(cur_top == 0) {
+        res = EUNFLOW;
+        goto out;  
+    }
+    
+    stack->top = cur_top->next;
+    free(cur_top);
+
+out:
+    if(res == EINVARG) printf("EINVARG: the `stack` argument must not"
+                              " be a null pointer!\n");
+    if(res == EUNFLOW) printf("EUNFLOW: stack underflow! The stack is"
+                              " empty; there are no elements to"
+                              " delete. \n");
+    return res; 
 }
 
 int pop(Stack* stack, void** top_value_ref) {
@@ -66,25 +91,19 @@ int pop(Stack* stack, void** top_value_ref) {
         goto out;
     }
 
-    StackNode* cur_top = stack->top; 
-    *top_value_ref = cur_top->value; 
-    stack->top = cur_top->next;
-  
-    free(cur_top);
+    *top_value_ref = stack->top->value; 
+    delete_top_node(stack);
 
     stack->size -= 1;
 
 out:
     if(res == EINVARG) printf("EINVARG: neither the `stack` nor the"
                               " `top_value_ref` argument can be a null"
-                              " pointer!");
-    if(res == EUNFLOW) printf("EUNFLOW: stack underflow; the stack is"
-                              " empty!");
+                              " pointer!\n");
+    if(res == EUNFLOW) printf("EUNFLOW: stack underflow! The stack is"
+                              " empty; there are no elements to"
+                              " pop.\n");
     return res;
-}
-
-int size(Stack* stack) {
-    return stack->size;
 }
 
 int delete_stack(Stack** stack_ref) {
@@ -96,10 +115,9 @@ int delete_stack(Stack** stack_ref) {
     }
 
     Stack* stack = *stack_ref;
-    void** top_val_ref;
 
     while(stack->top != 0) {
-       pop(stack, top_val_ref); 
+        delete_top_node(stack);
     }
 
     free(stack);
@@ -108,5 +126,23 @@ out:
     if(res == EINVARG) printf("EINVARG: the `stack_ref` argument must"
                               " not be a null pointer!");
     return res;
+}
+
+int size(Stack* stack) {
+    int status = 0;
+
+    if(stack == 0) {
+        status = EINVARG;
+        goto out;
+    }
+
+out:
+    if(status == EINVARG) {
+        printf("EINVARG: the `stack` argument must not"
+               " be a null pointer!\n");
+        return status;
+    } else {
+        return stack->size;
+    }
 }
 
