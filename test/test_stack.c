@@ -6,20 +6,20 @@
 #include <stdlib.h>
 
 Stack* test_stack;
-typedef struct point {
+typedef struct {
     double x;
     double y;
 } Point;
 
 static RoutineResult before_each() {
     test_stack = malloc(sizeof(Stack));
-    return init_stack(test_stack) < 0?
-        ROUTINE_FAILED : ROUTINE_SUCCEEDED;
+    return init_stack(test_stack) == SUCCESS ?
+           ROUTINE_SUCCEEDED : ROUTINE_FAILED;
 }
 
 static RoutineResult after_each() {
-    return delete_stack(&test_stack) < 0?
-        ROUTINE_FAILED : ROUTINE_SUCCEEDED;
+    return delete_stack(&test_stack) == SUCCESS ?
+           ROUTINE_SUCCEEDED : ROUTINE_FAILED;
 }
 
 static TestResult test_push() {
@@ -102,6 +102,60 @@ out:
     return res;
 }
 
+static TestResult test_peek() {
+    TestResult res = TEST_PASSED;
+
+    Point* p_A = malloc(sizeof(Point));
+    *p_A = (Point){ .x = 1, .y = 2 }; 
+    Point* p_B = malloc(sizeof(Point));
+    *p_B = (Point){ .x = 1, .y = 2 }; 
+    Point* p_C = malloc(sizeof(Point));
+    *p_C = (Point){ .x = 1, .y = 2 }; 
+
+    push(test_stack, (void*)p_A);
+    push(test_stack, (void*)p_B);
+    push(test_stack, (void*)p_C);
+
+    void** cur_top_val_ref = malloc(sizeof(Point*));
+    peek(test_stack, cur_top_val_ref);
+    if(*cur_top_val_ref != (void*)p_C) {
+        print_freq("(void*)p_C should have been peeked at!"); 
+        res = TEST_FAILED;
+        goto out;
+    }
+
+    pop(test_stack, cur_top_val_ref);
+    peek(test_stack, cur_top_val_ref);
+    if(*cur_top_val_ref != (void*)p_B) {
+        print_freq("(void*)p_B should have been peeked at!"); 
+        res = TEST_FAILED;
+        goto out;
+    }
+
+    pop(test_stack, cur_top_val_ref);
+    peek(test_stack, cur_top_val_ref);
+    if(*cur_top_val_ref != (void*)p_A) {
+        print_freq("(void*)p_A should have been peeked at!"); 
+        res = TEST_FAILED;
+        goto out;
+    }
+
+    pop(test_stack, cur_top_val_ref);
+    if(peek(test_stack, cur_top_val_ref) != ESTACKEMPTY) {
+        print_freq("The stack should catch peeking at an empty"
+                   " stack!");
+        res = TEST_FAILED;
+        goto out;
+    }
+
+out:
+    free(p_A);
+    free(p_B);
+    free(p_C);
+    free(cur_top_val_ref);
+    return res;
+}
+
 static TestResult test_size() {
     TestResult res = TEST_PASSED;
     
@@ -150,6 +204,7 @@ int main() {
 
     register_test(catalog, "test_push", test_push); 
     register_test(catalog, "test_pop", test_pop); 
+    register_test(catalog, "test_peek", test_peek); 
     register_test(catalog, "test_size", test_size); 
 
     register_before_each_routine(catalog, before_each);

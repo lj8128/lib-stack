@@ -49,7 +49,7 @@ out:
     if(res == EINVARG) printf("EINVARG: the `stack` argument must not"
                               " be a null pointer!\n");
     if(res == EMEM) printf("EMEM: failed to allocate memory to"
-            " `new_node`!\n");
+                           " `new_node`!\n");
     return res;
 }
 
@@ -105,6 +105,49 @@ out:
     return res;
 }
 
+int peek (Stack* stack, void** top_value_ref) {
+    int res = SUCCESS;
+
+    if(stack == 0 || top_value_ref == 0) {
+        res = EINVARG;
+        goto out;
+    }
+
+    if(stack->top == 0) {
+        res = ESTACKEMPTY;
+        goto out;
+    }
+
+    *top_value_ref = stack->top->value; 
+
+out:
+    if(res == EINVARG) printf("EINVARG: neither the `stack` nor the"
+                              " `top_value_ref` argument can be a null"
+                              " pointer!\n");
+    if(res == ESTACKEMPTY) printf("ESTACKEMPTY: the stack is empty."
+                                  " There is no element to peek"
+                                  " at.\n");
+    return res;
+}
+
+int size(Stack* stack) {
+    int status = SUCCESS;
+
+    if(stack == 0) {
+        status = EINVARG;
+        goto out;
+    }
+
+out:
+    if(status == EINVARG) {
+        printf("EINVARG: the `stack` argument must not"
+               " be a null pointer!\n");
+        return status;
+    } else {
+        return stack->size;
+    }
+}
+
 int delete_stack(Stack** stack_ref) {
     int res = SUCCESS;
 
@@ -131,23 +174,5 @@ out:
                               " not be a null pointer, and must point"
                               " to a stack!");
     return res;
-}
-
-int size(Stack* stack) {
-    int status = 0;
-
-    if(stack == 0) {
-        status = EINVARG;
-        goto out;
-    }
-
-out:
-    if(status == EINVARG) {
-        printf("EINVARG: the `stack` argument must not"
-               " be a null pointer!\n");
-        return status;
-    } else {
-        return stack->size;
-    }
 }
 

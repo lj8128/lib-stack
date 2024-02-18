@@ -5,5 +5,6 @@
 #define EMEM -1
 #define EINVARG -2
 #define EUNFLOW -3
+#define ESTACKEMPTY -4
 
 #endif

@@ -14,4 +14,5 @@ all: ./build/libstack.so ./bin/tester.bin
 clean:
 	rm -f ./build/*.o
 	rm -f ./build/*.so
+	rm -f ./bin/*.bin
 
